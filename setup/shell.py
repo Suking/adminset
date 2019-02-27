@@ -19,7 +19,6 @@ log("setup.log", level, log_path)
 @login_required()
 @permission_verify()
 def index(request):
-    temp_name = "setup/setup-header.html"
     all_host = Host.objects.all()
     all_group = HostGroup.objects.all()
     all_scripts = get_scripts(scripts_dir)
@@ -30,7 +29,6 @@ def index(request):
 @permission_verify()
 def exec_scripts(request):
     ret = []
-    temp_name = "setup/setup-header.html"
     if request.method == 'POST':
         server = request.POST.getlist('mserver', [])
         group = request.POST.getlist('mgroup', [])
@@ -81,7 +79,8 @@ def exec_scripts(request):
                     logging.info("==========Shell Start==========")
                     logging.info("User:"+request.user.username)
                     logging.info("Group:"+g)
-                    hosts = Host.objects.filter(group__name=g)
+                    get_group = HostGroup.objects.get(name=g)
+                    hosts = get_group.serverList.all()
                     ret.append(g)
                     for host in hosts:
                         ret.append(host.hostname)
@@ -105,7 +104,8 @@ def exec_scripts(request):
                     logging.info("==========Shell Start==========")
                     logging.info("User:"+request.user.username)
                     logging.info("Group:"+g)
-                    hosts = Host.objects.filter(group__name=g)
+                    get_group = HostGroup.objects.get(name=g)
+                    hosts = get_group.serverList.all()
                     ret.append(g)
                     for host in hosts:
                         ret.append(host.hostname)

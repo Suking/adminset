@@ -9,10 +9,10 @@
         showhide(1);
     }
     function showhide(n) {
-        var box = document.getElementById("navi");
+        var box = document.getElementById("navilist");
         box.className="active";
-        var box = document.getElementById("navi_manage");
-        box.className="active";
+        var box2 = document.getElementById("navimanage");
+        box2.className="active";
     }
 </script>
 <div class="content-wrapper">
@@ -22,12 +22,12 @@
 
     <!-- Main content -->
     <section class="content">
-        <form action="{% url 'delete' %}" method="post">
+        <form action="{% url 'navidelete' %}" method="post">
                 {% csrf_token %}
             <div class="box">
                 <div class="box-header">
                   <div class="btn-group">
-						 <a href="{% url 'add' %}"><li class="btn btn-success" style="width: 60pt;font-size: medium" ><b>添加</b></li></a>
+						 <a id="naviadd" style="display: none" href="{% url 'naviadd' %}" class="btn btn-default">添加</a>
                   </div>
                 </div>
                 <!-- /.box-header -->
@@ -41,6 +41,7 @@
                                     <th>名称</th>
                                     <th>注释</th>
                                     <th>URL</th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -49,9 +50,10 @@
                                     <tr class="even gradeA">
                                         <td><input type="checkbox" id="u_id" class="item1" value="{{ navi.id }}" name="navi_check" /></td>
                                         <input type="hidden" name="u_name" value="{{ navi.name }}">
-                                        <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ navi.id }}">{{ navi.name }}</li></a></td>
+                                        <td>{{ navi.name }}</td>
                                         <td>{{ navi.description }}</td>
                                         <td>{{ navi.url }}</td>
+                                        <td><a id="naviedit" style="display: none" class="btn btn-sm btn-info" href="#" onclick="return tanchu({{ navi.id }})">编辑</a></td>
                                     </tr>
                                 {% endfor %}
                                 {% else %}
@@ -61,7 +63,7 @@
                             </tbody>
                   </table>
                 <div class="btn-group">
-						 <button class="btn btn-danger" style="width: 60pt;font-size: medium" onclick="return checkSubmit()"><b>删除</b></button>
+						 <button id="navidel" style="display: none" class="btn btn-default" onclick="return checkSubmit()">删除</button>
                   </div>
                 </div>
             </div>
@@ -112,7 +114,7 @@ function tanchu(n){
     closeBtn: 1,
     area: ['600px', '400px'],
     shadeClose: true, //点击遮罩关闭
-    content: ['/navi/edit?id=' + n,],
+    content: ['/navi/naviedit?id=' + n],
     end:function(){
             var handle_status = $("#handle_status").val();
             if ( handle_status == '1' ) {

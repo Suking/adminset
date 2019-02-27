@@ -13,8 +13,8 @@
     function showhide(n) {
         var box = document.getElementById("setup");
         box.className="active";
-        var box = document.getElementById("ansible");
-        box.className="active";
+        var box2 = document.getElementById("ansible");
+        box2.className="active";
     }
 </script>
 
@@ -28,8 +28,8 @@
     <section class="content">
       <div class="box box-default">
         <div class="box-header with-border">
-            <div class="col-sm-2" style="padding-left: 0">
-                 <a href="#" onclick="return sync();"><li class="btn btn-success" ><b>同步数据</b></li></a>
+            <div class="btn btn-group" style="padding-left: 0">
+                 <a id="hostsync" style="display: none;" class="btn btn-success" href="#" onclick="return sync();">同步数据</a>
             </div>
           <div class="box-tools pull-right">
           </div>
@@ -85,7 +85,7 @@
                                   password: 1234567<br>
                                   webport: 8080<br>
                                   shutdown: 8005"></span>
-                <textarea id="mvars" name="mvars" class="form-control" placeholder="enter kay for spilting vars" rows="4"></textarea>
+                <textarea id="mvars" name="mvars" class="form-control" placeholder="enter key for spilting vars" rows="4"></textarea>
               </div>
               <!-- /.form-group -->
             <input type="submit" id="playbook_submit" class="btn btn-primary" style="width: 60pt; font-size: medium;" value="执行">

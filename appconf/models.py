@@ -3,13 +3,13 @@
 
 from __future__ import unicode_literals
 from django.db import models
-from cmdb.models import Host
 
 
 class AuthInfo(models.Model):
     dis_name = models.CharField(u"认证标识", max_length=50, unique=True, blank=False)
     username = models.CharField(u"用户名", max_length=50, blank=True)
     password = models.CharField(u"密码", max_length=50, blank=True)
+    deploy_port = models.IntegerField(u"端口", default=22)
     private_key = models.CharField(u"密钥", max_length=100, blank=True)
     memo = models.TextField(u"备注信息", max_length=200, blank=True)
 
@@ -112,11 +112,6 @@ class Project(models.Model):
             blank=True,
             on_delete=models.SET_NULL,
             verbose_name=u"项目负责人"
-    )
-    serverList = models.ManyToManyField(
-            Host,
-            blank=True,
-            verbose_name=u"所在服务器"
     )
 
     def __unicode__(self):

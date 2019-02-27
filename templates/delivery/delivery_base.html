@@ -11,8 +11,6 @@
         function init() {
             var box = document.getElementById("delivery");
             box.className="active";
-            var box = document.getElementById("delivery_list");
-            box.className="active";
         }
     </script>
 
@@ -42,7 +40,9 @@
                 {{ field.errors }}
                 {% if field.html_name == "auth" %}
                     {{ field.label_tag }} {{ field }}
-                    <a href="#" onclick="return popWin()"><li class="btn btn-success" ><b>添加认证</b></li></a>
+                    <div class="btn btn-group">
+                        <a id="authinfoaddmini" style="display: none;" href="#" onclick="return popWin()"><li class="btn btn-success" ><b>添加认证</b></li></a>
+                    </div>
                 {% else %}
                     {{ field.label_tag }} {{ field }}
                 {% endif %}
@@ -66,14 +66,14 @@
     <input id="new_auth_id" value="" hidden="hidden">
     <input id="new_auth_name" value="" hidden="hidden">
   </div>
-{#    <script>#}
-{#        var demo1 = $('select[name="serverList"]').bootstrapDualListbox({#}
-{#              nonSelectedListLabel: '可选择服务器',#}
-{#              selectedListLabel: '已选择服务器',#}
-{#              preserveSelectionOnMove: 'moved',#}
-{#              moveOnSelect: false,#}
-{#        });#}
-{#    </script>#}
+    <script>
+        var demo1 = $('select[name="serverList"]').bootstrapDualListbox({
+              nonSelectedListLabel: '可选择服务器',
+              selectedListLabel: '已选择服务器',
+              preserveSelectionOnMove: 'moved',
+              moveOnSelect: false,
+        });
+    </script>
 <script>
 function popWin(){
   layer.open({
@@ -81,7 +81,7 @@ function popWin(){
       title: '项目列表',
       area: ['700px', '500px'],
       shadeClose: true, //点击遮罩关闭
-      content: ['/appconf/authinfo/add/mini/'],
+      content: ['/appconf/authinfoaddmini/'],
       end:function(){
             var handle_status = $("#handle_status").val();
             if ( handle_status == '1' ) {

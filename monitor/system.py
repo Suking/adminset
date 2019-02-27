@@ -1,12 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, HttpResponse
-from cmdb.models import Host
+from cmdb.models import Host, Idc, HostGroup
+from appconf.product import Product
 from django.contrib.auth.decorators import login_required
 from accounts.permission import permission_verify
 import json
 import time
-from api import GetSysData
+from monitor.api import GetSysData
+from django.views.decorators.csrf import csrf_exempt
+from delivery.models import Delivery
+
 TIME_SECTOR = (
             3600,
             3600*3,
@@ -101,15 +105,14 @@ def get_net(request, hostname, timing, net_id):
 @login_required()
 @permission_verify()
 def index(request):
-    temp_name = "monitor/monitor-header.html"
     all_host = Host.objects.all()
+    idcs = Idc.objects.all()
     return render(request, "monitor/index.html", locals())
 
 
 @login_required()
 @permission_verify()
 def host_info(request, hostname, timing):
-    temp_name = "monitor/monitor-header.html"
     # 传递磁盘号给前端JS,用以迭代分区图表
     disk = GetSysData(hostname, "disk", 3600, 1)
     disk_data = disk.get_data()
@@ -126,6 +129,70 @@ def host_info(request, hostname, timing):
         p = len(n["net"])
         for x in range(p):
             nic_len.append(x)
-    return render(request, "monitor/host_info_{}.html".format(timing), locals())
+    return render(request, "monitor/host_info.html", locals())
 
 
+def host_tree():
+    host_node = []
+    for idc in Idc.objects.all():
+        single_server_list = []
+        for host in idc.host_set.all():
+            if not host.cabinet_set.all():
+                single_server_list.append({'name': host.hostname, 'url': "/monitor/system/{}/0/".format(host.hostname), 'target':"myframe"})
+        cabinet_list = []
+        cabinets = idc.cabinet_set.all()
+        for cabinet in cabinets:
+            server_list = []
+            servers = cabinet.serverList.all()
+            for server in servers:
+                server_data = {'name': server.hostname, 'url': "/monitor/system/{}/0/".format(server.hostname), 'target':"myframe"}
+                server_list.append(server_data)
+            cabinet_data = {'name': cabinet.name, 'children': server_list}
+            cabinet_list.append(cabinet_data)
+            del server_list
+        data = {"name": idc.name, "open": False, "children": cabinet_list + single_server_list }
+        del cabinet_list
+        host_node.append(data)
+    return host_node
+
+
+def group_tree():
+    group_node = []
+    for group in HostGroup.objects.all():
+        server_list = []
+        servers = group.serverList.all()
+        for server in servers:
+            server_data = {'name': server.hostname, 'url': "/monitor/system/{}/0/".format(server.hostname), 'target':"myframe"}
+            server_list.append(server_data)
+        group_data = {'name': group.name, "open": False, 'children': server_list}
+        group_node.append(group_data)
+        del server_list
+    return group_node
+
+
+# def product_tree():
+#     product_node = []
+#     for pdt in Product.objects.all():
+#         project_list = []
+#         projects = pdt.project_set.all()
+#         for pjs in projects:
+#             server_list = []
+#             p2 = Delivery.objects.get(job_name_id=pjs.id)
+#             servers = p2.serverList.all()
+#             for server in servers:
+#                 server_data = {'name': server.hostname, 'url': "/monitor/system/{}/0/".format(server.hostname), 'target':"myframe"}
+#                 server_list.append(server_data)
+#             project_data = {'name': pjs.name, 'children': server_list}
+#             project_list.append(project_data)
+#             del server_list
+#         data = {"name": pdt.name, "open": False, "children": project_list}
+#         del project_list
+#         product_node.append(data)
+#     return product_node
+
+
+@login_required
+@csrf_exempt
+def tree_node(request):
+    all_node = host_tree() + group_tree() #+ product_tree()
+    return HttpResponse(json.dumps(all_node))

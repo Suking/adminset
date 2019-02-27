@@ -3,7 +3,7 @@
 # update by guohongze@126.com
 from django import forms
 from django.contrib import auth
-from models import UserInfo, RoleList, PermissionList
+from accounts.models import UserInfo, RoleList, PermissionList
 
 
 class LoginUserForm(forms.Form):
@@ -130,6 +130,28 @@ class ChangePasswordForm(forms.Form):
         return self.user
 
 
+class ChangeLdapPasswordForm(forms.Form):
+    new_password1 = forms.CharField(label=u'新密码', error_messages={'required': '请输入新密码'},
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'style': 'width:500px;'}))
+    new_password2 = forms.CharField(label=u'新密码', error_messages={'required': '请重复新输入密码'},
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'style': 'width:500px;'}))
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(ChangeLdapPasswordForm, self).__init__(*args, **kwargs)
+
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        if len(password1)<6:
+            raise forms.ValidationError(u'密码必须大于6位')
+
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError(u'两次密码输入不一致')
+        return password2
+
+
 class RoleListForm(forms.ModelForm):
     class Meta:
         model = RoleList
@@ -137,14 +159,21 @@ class RoleListForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'permission': forms.SelectMultiple(attrs={'class': 'form-control', 'size':'10', 'multiple': 'multiple'}),
+            'webssh': forms.SelectMultiple(attrs={'class': 'form-control', 'size':'10', 'multiple': 'multiple'}),
+            'delivery': forms.SelectMultiple(attrs={'class': 'form-control', 'size':'10', 'multiple': 'multiple'}),
+
         }
 
     def __init__(self,*args,**kwargs):
         super(RoleListForm,self).__init__(*args, **kwargs)
         self.fields['name'].label = u'名 称'
         self.fields['name'].error_messages = {'required': u'请输入名称'}
-        self.fields['permission'].label = u'URL'
+        self.fields['permission'].label = u'用户授权'
         self.fields['permission'].required = False
+        self.fields['webssh'].label = u'WEBSSH授权'
+        self.fields['webssh'].required = False
+        self.fields['delivery'].label = u'部署授权'
+        self.fields['delivery'].required = False
 
 
 class PermissionListForm(forms.ModelForm):

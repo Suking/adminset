@@ -4,18 +4,16 @@
 from django.shortcuts import render, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from models import Product
-from forms import ProductForm
+from appconf.models import Product
+from appconf.forms import ProductForm
 from accounts.permission import permission_verify
 
 
 @login_required()
 @permission_verify()
 def product_list(request):
-    temp_name = "appconf/appconf-header.html"
     all_product = Product.objects.all()
     results = {
-        'temp_name': temp_name,
         'all_product':  all_product,
     }
     return render(request, 'appconf/product_list.html', results)
@@ -28,18 +26,18 @@ def product_del(request):
     if product_id:
         Product.objects.filter(id=product_id).delete()
 
-    product_id_all = str(request.POST.get('product_id_all', ''))
-    if product_id_all:
-        for product_id in product_id_all.split(','):
-            Product.objects.filter(id=product_id).delete()
-
-    return HttpResponseRedirect(reverse('product_list'))
+    if request.method == 'POST':
+        product_items = request.POST.getlist('g_check', [])
+        if product_items:
+            for n in product_items:
+                Product.objects.filter(id=n).delete()
+    all_product = Product.objects.all()
+    return render(request, "appconf/product_list.html", locals())
 
 
 @login_required
 @permission_verify()
 def product_add(request):
-    temp_name = "appconf/appconf-header.html"
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -51,7 +49,6 @@ def product_add(request):
     results = {
         'form': form,
         'request': request,
-        'temp_name': temp_name,
     }
     return render(request, 'appconf/product_base.html', results)
 
@@ -60,7 +57,6 @@ def product_add(request):
 @permission_verify()
 def product_edit(request, product_id):
     product = Product.objects.get(id=product_id)
-    temp_name = "appconf/appconf-header.html"
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
@@ -73,7 +69,6 @@ def product_edit(request, product_id):
         'form': form,
         'product_id': product_id,
         'request': request,
-        'temp_name': temp_name,
     }
     return render(request, 'appconf/product_base.html', results)
 
@@ -81,11 +76,9 @@ def product_edit(request, product_id):
 @login_required
 @permission_verify()
 def project_list(request, product_id):
-    temp_name = "appconf/appconf-header.html"
     product = Product.objects.get(id=product_id)
     projects = product.project_set.all()
     results = {
-        'temp_name': temp_name,
         'project_list':  projects,
     }
     return render(request, 'appconf/product_project_list.html', results)

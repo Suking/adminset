@@ -44,7 +44,6 @@ def write_role_vars(roles, vargs):
 @login_required()
 @permission_verify()
 def index(request):
-    temp_name = "setup/setup-header.html"
     all_host = Host.objects.all()
     all_dir = get_roles(roles_dir)
     all_pbook = get_playbook(playbook_dir)
@@ -56,7 +55,6 @@ def index(request):
 @permission_verify()
 def playbook(request):
     ret = []
-    temp_name = "setup/setup-header.html"
     if os.path.exists(ansible_dir + '/gexec.yml'):
         os.remove(ansible_dir + '/gexec.yml')
     else:
@@ -84,7 +82,7 @@ def playbook(request):
                             logging.info("Role:"+r)
                         f.writelines(flist)
                     cmd = "ansible-playbook"+" " + ansible_dir+'/gexec.yml'
-                    p = Popen(cmd, stderr=PIPE, stdout=PIPE, shell=True)
+                    p = Popen(cmd, stderr=PIPE, stdout=PIPE)
                     data = p.communicate()
                     ret.append(data)
                     for d in data:
@@ -100,7 +98,7 @@ def playbook(request):
                         f.writelines(flist)
                         f.close()
                         cmd = "ansible-playbook"+" " + playbook_dir + p
-                        pcmd = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+                        pcmd = Popen(cmd, stdout=PIPE, stderr=PIPE)
                         data = pcmd.communicate()
                         ret.append(data)
                         logging.info("==========ansible tasks start==========")
@@ -164,7 +162,6 @@ def ansible_command(request):
     command_list = []
     ret = []
     count = 1
-    temp_name = "setup/setup-header.html"
     if request.method == 'POST':
         mcommand = request.POST.get('mcommand')
         command_list = mcommand.split('\n')
@@ -199,7 +196,8 @@ def host_sync(request):
     for g in group:
         group_name = "["+g.name+"]"+"\n"
         ansible_file.write(group_name)
-        members = Host.objects.filter(group__name=g)
+        get_member = HostGroup.objects.get(name=g)
+        members = get_member.serverList.all()
         for m in members:
             group_item = m.hostname+"\n"
             ansible_file.write(group_item)

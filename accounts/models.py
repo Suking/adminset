@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from cmdb.models import HostGroup
+from appconf.models import Project
 # Create your models here.
 
 
@@ -17,6 +19,8 @@ class RoleList(models.Model):
     name = models.CharField(max_length=64)
     # permission = models.ManyToManyField(PermissionList, null=True, blank=True)
     permission = models.ManyToManyField(PermissionList, blank=True)
+    webssh = models.ManyToManyField(HostGroup, blank=True)
+    delivery = models.ManyToManyField(Project, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -53,8 +57,9 @@ class UserInfo(AbstractBaseUser):
     email = models.EmailField(max_length=255)
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    nickname = models.CharField(max_length=64, null=True)
+    nickname = models.CharField(max_length=64, null=True, blank=True)
     role = models.ForeignKey(RoleList, null=True, blank=True)
+    ldap_name = models.CharField(max_length=64, blank=True)
 
     objects = UserManager()
     USERNAME_FIELD = 'username'
